@@ -5,7 +5,6 @@ Used as a utility class for functions related to
 form manipulation.
 """
 
-import six
 from collections import namedtuple
 
 
@@ -20,12 +19,9 @@ def has_digit(string_or_list, sep="_"):
     element is a digit.  sep is used when a string is given to know
     what separates one word from another.
     """
-    if isinstance(string_or_list, (tuple, list)):
+    if isinstance(string_or_list, list):
         list_length = len(string_or_list)
-        if list_length:
-            return six.text_type(string_or_list[-1]).isdigit()
-        else:
-            return False
+        return str(string_or_list[-1]).isdigit() if list_length > 0 else False
     else:
         return has_digit(string_or_list.split(sep))
 
@@ -43,7 +39,7 @@ def make_key(*args, **kwargs):
 
     >>> from mongonaut.forms.form_utils import make_key
     >>> make_key('hi', 'my', 'firend')
-    >>> u'hi_my_firend'
+    >>> 'hi_my_firend'
 
     >>> make_key('hi', 'my', 'firend', sep='i')
     >>> 'hiimyifirend'
@@ -52,21 +48,22 @@ def make_key(*args, **kwargs):
     >>> 'hiimyifirendithisibeiwhat'
 
     >>> make_key('hi', 'my', 'firend',['this', 'be', 'what'])
-    >>> u'hi_my_firend_this_be_what'
+    >>> 'hi_my_firend_this_be_what'
 
     """
-    sep = kwargs.get('sep', u"_")
+    sep = kwargs.get('sep', "_")
     exclude_last_string = kwargs.get('exclude_last_string', False)
     string_array = []
 
     for arg in args:
         if isinstance(arg, list):
-            string_array.append(six.text_type(sep.join(arg)))
+            string_array.append(str(sep.join(arg)))
         else:
             if exclude_last_string:
                 new_key_array = arg.split(sep)[:-1]
                 if len(new_key_array) > 0:
                     string_array.append(make_key(new_key_array))
             else:
-                string_array.append(six.text_type(arg))
+                string_array.append(str(arg))
     return sep.join(string_array)
+

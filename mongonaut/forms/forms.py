@@ -33,7 +33,6 @@ class MongoModelForm(MongoModelFormBaseMixin, Form):
         super(MongoModelForm, self).__init__(*args, **kwargs)
 
     def set_fields(self):
-        """Sets existing data to form fields."""
 
         # Get dictionary map of current model
         if self.is_initialized:
@@ -45,10 +44,8 @@ class MongoModelForm(MongoModelFormBaseMixin, Form):
         self.set_form_fields(form_field_dict)
 
     def set_post_data(self):
-        """
-            Need to set form data so that validation on all post data occurs and
-            places newly entered form data on the form object.
-        """
+        # Need to set form data so that validation on all post data occurs and
+        # places newly entered form data on the form object.
         self.form.data = self.post_data_dict
 
         # Specifically adding list field keys to the form so they are included
@@ -60,14 +57,11 @@ class MongoModelForm(MongoModelFormBaseMixin, Form):
 
                 # Add new key value with field to form fields so validation
                 # will work correctly
-                for key in self.post_data_dict.keys():
+                for key in list(self.post_data_dict.keys()):
                     if base_key in key:
                         self.form.fields.update({key: field})
 
     def get_form(self):
-        """
-        Generate the form for view.
-        """
         self.set_fields()
         if self.post_data_dict is not None:
             self.set_post_data()
@@ -120,8 +114,7 @@ class MongoModelForm(MongoModelFormBaseMixin, Form):
 
         return list_dict
 
-    def create_document_dictionary(self, document, document_key=None,
-                                                        owner_document=None):
+    def create_document_dictionary(self, document, document_key=None, owner_document=None):
         """
         Given document generates a dictionary representation of the document.
         Includes the widget for each for each field in the document.

@@ -5,8 +5,6 @@ except ImportError:
 
 
 class BaseMongoAdmin(object):
-    """Base model class for replication django.site.ModelAdmin class.
-    """
 
     search_fields = []
 
@@ -40,23 +38,22 @@ class BaseMongoAdmin(object):
         Returns True if the given HttpRequest has permission to view
         *at least one* page in the mongonaut site.
         """
-        return request.user.is_authenticated and request.user.is_active
+        return request.user.is_authenticated() and request.user.is_active
 
     def has_edit_permission(self, request):
         """ Can edit this object """
-        return request.user.is_authenticated and request.user.is_active and request.user.is_staff
+        return request.user.is_authenticated() and request.user.is_active and request.user.is_staff
 
     def has_add_permission(self, request):
         """ Can add this object """
-        return request.user.is_authenticated and request.user.is_active and request.user.is_staff
+        return request.user.is_authenticated() and request.user.is_active and request.user.is_staff
 
     def has_delete_permission(self, request):
         """ Can delete this object """
-        return request.user.is_authenticated and request.user.is_active and request.user.is_superuser
+        return request.user.is_authenticated() and request.user.is_active and request.user.is_superuser
 
 
 class MongoAdmin(BaseMongoAdmin):
-    """Serves as the controller for all the actions defined by the developer."""
 
     list_display = ('__str__',)
     list_display_links = ()

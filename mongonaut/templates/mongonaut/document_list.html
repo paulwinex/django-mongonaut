@@ -1,13 +1,10 @@
 {% extends "mongonaut/base.html" %}
-
+{% load url from future %}
 {% load mongonaut_tags %}
 
 {% block breadcrumbs %}
-<li class="breadcrumb-item">
-    <a href='{% url "index" %}'>Mongonaut</a>
-    <span class="divider">/</span>
-</li>
-<li class="breadcrumb-item active">{{ document_name }}s</li>
+<li><a href="{% url "index" %}">Mongonaut</a> <span class="divider">/</span></li>
+<li><a href="">{{ document_name }}s</a></li>
 {% endblock %}
 
 
@@ -42,21 +39,21 @@
             {% endfor %}
         </tr>
     </thead>
-
+        
     {% for obj in object_list %}
         <tr>
             {% if request.user.is_superuser %}<td><input type="checkbox" name="mongo_id" value="{{ obj.id }}" /></td>{% endif %}
             {% for key in keys %}
                 {% if key == 'id' %}
-                    <td><a href="{% url "document_detail" app_label document_name obj.id %}">{{ obj.id }}</a></td>
+                    <td><a href="{% url "document_detail" app_label document_name obj.id %}">{{ obj.id }}</a></td>                                
                 {% else %}
-                    <td>{% get_document_value obj key %}</td>
+                    <td>{% get_document_value obj key %}</td>                
                 {% endif %}
 
             {% endfor %}
         </tr>
     {% endfor %}
-</table>
+</table>    
 {% if request.user.is_superuser %}
     {% include "mongonaut/actions/action_buttons.html" %}
 {% endif %}
@@ -83,7 +80,7 @@ $(function() {
     $('input[name="check_all"]').click ( function() {
         if ($(this).is(":checked" )){
             $('input[name="mongo_id"]').prop("checked", true);
-        }
+        }       
         else
          {
             $('input[name="mongo_id"]').prop("checked", false);

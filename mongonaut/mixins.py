@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-import types
-from importlib import import_module
 
 from django.conf import settings
 from django.contrib import messages
 from django.http import HttpResponseForbidden
+# from django.utils.importlib import import_module
+from importlib import import_module
 from mongoengine.fields import EmbeddedDocumentField
 
 from mongonaut.exceptions import NoMongoAdminSpecified
@@ -16,21 +16,13 @@ from mongonaut.utils import trim_field_key
 
 
 class AppStore(object):
-    """Represents Django apps in the django-mongonaut admin."""
 
     def __init__(self, module):
         self.models = []
-        self.add_module(module)
-
-    def add_module(self, module, max_depth=1):
-        for key in module.__dict__.keys():
+        for key in list(module.__dict__.keys()):
             model_candidate = getattr(module, key)
             if hasattr(model_candidate, 'mongoadmin'):
                 self.add_model(model_candidate)
-
-            elif (max_depth > 0
-                  and isinstance(model_candidate, types.ModuleType)):
-                self.add_module(model_candidate, max_depth - 1)
 
     def add_model(self, model):
         model.name = model.__name__
@@ -38,13 +30,10 @@ class AppStore(object):
 
 
 class MongonautViewMixin(object):
-    """Used for all views in the project, handles authorization to content,
-        viewing, controlling and setting of data.
-    """
 
     def render_to_response(self, context, **response_kwargs):
         if hasattr(self, 'permission') and not self.request.user.has_perm(self.permission):
-            return HttpResponseForbidden("You do not have permissions to access this content. Login as a superuser to view and edit data.")
+            return HttpResponseForbidden("You do not have permissions to access this content.")
 
         return self.response_class(
             request=self.request,
@@ -61,7 +50,7 @@ class MongonautViewMixin(object):
                                                  "//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css")
         context['MONGONAUT_TWITTER_BOOTSTRAP_ALERT'] = getattr(settings,
                                                                "MONGONAUT_TWITTER_BOOTSTRAP_ALERT",
-                                                       "//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js")
+                                                       "//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min")
         return context
 
     def get_mongoadmins(self):
@@ -156,11 +145,11 @@ class MongonautFormViewMixin(object):
             self.embedded_list_docs = {}
 
             if self.new_document is None:
-                messages.error(self.request, u"Failed to save document")
+                messages.error(self.request, "Failed to save document")
             else:
                 self.new_document = self.new_document()
 
-                for form_key in self.form.cleaned_data.keys():
+                for form_key in list(self.form.cleaned_data.keys()):
                     if form_key == 'id' and hasattr(self, 'document'):
                         self.new_document.id = self.document.id
                         continue
@@ -186,13 +175,13 @@ class MongonautFormViewMixin(object):
         remaining_key = make_key(remaining_key_array)
 
         if current_key.lower() == 'id':
-            raise KeyError(u"Mongonaut does not work with models which have fields beginning with id_")
+            raise KeyError("Mongonaut does not work with models which have fields beginning with id_")
 
         # Create boolean checks to make processing document easier
         is_embedded_doc = (isinstance(document._fields.get(current_key, None), EmbeddedDocumentField)
                           if hasattr(document, '_fields') else False)
         is_list = not key_array_digit is None
-        key_in_fields = current_key in document._fields.keys() if hasattr(document, '_fields') else False
+        key_in_fields = current_key in list(document._fields.keys()) if hasattr(document, '_fields') else False
 
         # This ensures you only go through each documents keys once, and do not duplicate data
         if key_in_fields:
@@ -206,8 +195,8 @@ class MongonautFormViewMixin(object):
                 setattr(document, current_key, value)
 
     def set_embedded_doc(self, document, form_key, current_key, remaining_key):
-        """Get the existing embedded document if it exists, else created it."""
 
+        # Get the existing embedded document if it exists, else created it.
         embedded_doc = getattr(document, current_key, False)
         if not embedded_doc:
             embedded_doc = document._fields[current_key].document_type_obj()
@@ -217,9 +206,6 @@ class MongonautFormViewMixin(object):
         setattr(document, current_key, embedded_doc)
 
     def set_list_field(self, document, form_key, current_key, remaining_key, key_array_digit):
-        """1. Figures out what value the list ought to have
-           2. Sets the list
-        """
 
         document_field = document._fields.get(current_key)
 
@@ -232,7 +218,7 @@ class MongonautFormViewMixin(object):
         current_list = getattr(document, current_key, None)
 
         if isinstance(document_field.field, EmbeddedDocumentField):
-            embedded_list_key = u"{0}_{1}".format(current_key, key_array_digit)
+            embedded_list_key = "{0}_{1}".format(current_key, key_array_digit)
 
             # Get the embedded document if it exists, else create it.
             embedded_list_document = self.embedded_list_docs.get(embedded_list_key, None)
